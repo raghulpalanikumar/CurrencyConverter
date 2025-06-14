@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Currency Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .background-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            right: 30%;
+            animation-delay: 7s;
+        }
+
+        @keyframes backgroundMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-20px, -20px) rotate(1deg); }
+            50% { transform: translate(20px, 20px) rotate(-1deg); }
+            75% { transform: translate(-10px, 10px) rotate(0.5deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(15px) rotate(240deg); }
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            min-height: calc(100vh - 200px);
+        }
+
+        .converter-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            width: 100%;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .converter-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .converter-title {
+            text-align: center;
+            color: #333;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .currency-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 2rem;
+        }
+
+        .swap-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-button:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .convert-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .convert-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .convert-button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffd700;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .converter-container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+
+            .currency-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .swap-button {
+                justify-self: center;
+                transform: rotate(90deg);
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">💱 CurrencyPro</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#converter">Converter</a></li>
+                    <li><a href="#rates">Live Rates</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="converter-container" id="converter">
+            <h1 class="converter-title">Currency Converter</h1>
+            
+            <form id="converterForm">
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" id="amount" step="0.01" min="0" placeholder="Enter amount" required>
+                </div>
+
+                <div class="currency-row">
+                    <div class="form-group">
+                        <label for="fromCurrency">From</label>
+                        <select id="fromCurrency" required>
+                            <option value="">Select Currency</option>
+                            <option value="USD">🇺🇸 USD - US Dollar</option>
+                            <option value="EUR">🇪🇺 EUR - Euro</option>
+                            <option value="GBP">🇬🇧 GBP - British Pound</option>
+                            <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                            <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                            <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                            <option value="CHF">🇨🇭 CHF - Swiss Franc</option>
+                            <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                            <option value="SEK">🇸🇪 SEK - Swedish Krona</option>
+                            <option value="NZD">🇳🇿 NZD - New Zealand Dollar</option>
+                            <option value="MXN">🇲🇽 MXN - Mexican Peso</option>
+                            <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                            <option value="HKD">🇭🇰 HKD - Hong Kong Dollar</option>
+                            <option value="NOK">🇳🇴 NOK - Norwegian Krone</option>
+                            <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                            <option value="KRW">🇰🇷 KRW - South Korean Won</option>
+                            <option value="TRY">🇹🇷 TRY - Turkish Lira</option>
+                            <option value="RUB">🇷🇺 RUB - Russian Ruble</option>
+                            <option value="BRL">🇧🇷 BRL - Brazilian Real</option>
+                            <option value="ZAR">🇿🇦 ZAR - South African Rand</option>
+                            <option value="PLN">🇵🇱 PLN - Polish Zloty</option>
+                            <option value="DKK">🇩🇰 DKK - Danish Krone</option>
+                            <option value="CZK">🇨🇿 CZK - Czech Koruna</option>
+                            <option value="HUF">🇭🇺 HUF - Hungarian Forint</option>
+                            <option value="ILS">🇮🇱 ILS - Israeli Shekel</option>
+                            <option value="CLP">🇨🇱 CLP - Chilean Peso</option>
+                            <option value="PHP">🇵🇭 PHP - Philippine Peso</option>
+                            <option value="AED">🇦🇪 AED - UAE Dirham</option>
+                            <option value="COP">🇨🇴 COP - Colombian Peso</option>
+                            <option value="SAR">🇸🇦 SAR - Saudi Riyal</option>
+                            <option value="MYR">🇲🇾 MYR - Malaysian Ringgit</option>
+                            <option value="RON">🇷🇴 RON - Romanian Leu</option>
+                            <option value="BGN">🇧🇬 BGN - Bulgarian Lev</option>
+                            <option value="HRK">🇭🇷 HRK - Croatian Kuna</option>
+                            <option value="ISK">🇮🇸 ISK - Icelandic Krona</option>
+                            <option value="UYU">🇺🇾 UYU - Uruguayan Peso</option>
+                            <option value="EGP">🇪🇬 EGP - Egyptian Pound</option>
+                            <option value="THB">🇹🇭 THB - Thai Baht</option>
+                            <option value="TWD">🇹🇼 TWD - Taiwan Dollar</option>
+                            <option value="UAH">🇺🇦 UAH - Ukrainian Hryvnia</option>
+                            <option value="VND">🇻🇳 VND - Vietnamese Dong</option>
+                            <option value="IDR">🇮🇩 IDR - Indonesian Rupiah</option>
+                            <option value="PKR">🇵🇰 PKR - Pakistani Rupee</option>
+                            <option value="BDT">🇧🇩 BDT - Bangladeshi Taka</option>
+                            <option value="LKR">🇱🇰 LKR - Sri Lankan Rupee</option>
+                            <option value="NPR">🇳🇵 NPR - Nepalese Rupee</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="swap-button" id="swapBtn" title="Swap currencies">⇄</button>
+
+                    <div class="form-group">
+                        <label for="toCurrency">To</label>
+                        <select id="toCurrency" required>
+                            <option value="">Select Currency</option>
+                            <option value="USD">🇺🇸 USD - US Dollar</option>
+                            <option value="EUR">🇪🇺 EUR - Euro</option>
+                            <option value="GBP">🇬🇧 GBP - British Pound</option>
+                            <option value="JPY">🇯🇵 JPY - Japanese Yen</option>
+                            <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+                            <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                            <option value="CHF">🇨🇭 CHF - Swiss Franc</option>
+                            <option value="CNY">🇨🇳 CNY - Chinese Yuan</option>
+                            <option value="SEK">🇸🇪 SEK - Swedish Krona</option>
+                            <option value="NZD">🇳🇿 NZD - New Zealand Dollar</option>
+                            <option value="MXN">🇲🇽 MXN - Mexican Peso</option>
+                            <option value="SGD">🇸🇬 SGD - Singapore Dollar</option>
+                            <option value="HKD">🇭🇰 HKD - Hong Kong Dollar</option>
+                            <option value="NOK">🇳🇴 NOK - Norwegian Krone</option>
+                            <option value="INR">🇮🇳 INR - Indian Rupee</option>
+                            <option value="KRW">🇰🇷 KRW - South Korean Won</option>
+                            <option value="TRY">🇹🇷 TRY - Turkish Lira</option>
+                            <option value="RUB">🇷🇺 RUB - Russian Ruble</option>
+                            <option value="BRL">🇧🇷 BRL - Brazilian Real</option>
+                            <option value="ZAR">🇿🇦 ZAR - South African Rand</option>
+                            <option value="PLN">🇵🇱 PLN - Polish Zloty</option>
+                            <option value="DKK">🇩🇰 DKK - Danish Krone</option>
+                            <option value="CZK">🇨🇿 CZK - Czech Koruna</option>
+                            <option value="HUF">🇭🇺 HUF - Hungarian Forint</option>
+                            <option value="ILS">🇮🇱 ILS - Israeli Shekel</option>
+                            <option value="CLP">🇨🇱 CLP - Chilean Peso</option>
+                            <option value="PHP">🇵🇭 PHP - Philippine Peso</option>
+                            <option value="AED">🇦🇪 AED - UAE Dirham</option>
+                            <option value="COP">🇨🇴 COP - Colombian Peso</option>
+                            <option value="SAR">🇸🇦 SAR - Saudi Riyal</option>
+                            <option value="MYR">🇲🇾 MYR - Malaysian Ringgit</option>
+                            <option value="RON">🇷🇴 RON - Romanian Leu</option>
+                            <option value="BGN">🇧🇬 BGN - Bulgarian Lev</option>
+                            <option value="HRK">🇭🇷 HRK - Croatian Kuna</option>
+                            <option value="ISK">🇮🇸 ISK - Icelandic Krona</option>
+                            <option value="UYU">🇺🇾 UYU - Uruguayan Peso</option>
+                            <option value="EGP">🇪🇬 EGP - Egyptian Pound</option>
+                            <option value="THB">🇹🇭 THB - Thai Baht</option>
+                            <option value="TWD">🇹🇼 TWD - Taiwan Dollar</option>
+                            <option value="UAH">🇺🇦 UAH - Ukrainian Hryvnia</option>
+                            <option value="VND">🇻🇳 VND - Vietnamese Dong</option>
+                            <option value="IDR">🇮🇩 IDR - Indonesian Rupiah</option>
+                            <option value="PKR">🇵🇰 PKR - Pakistani Rupee</option>
+                            <option value="BDT">🇧🇩 BDT - Bangladeshi Taka</option>
+                            <option value="LKR">🇱🇰 LKR - Sri Lankan Rupee</option>
+                            <option value="NPR">🇳🇵 NPR - Nepalese Rupee</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="convert-button" id="convertBtn">
+                    Convert Currency 💸
+                </button>
+            </form>
+
+            <div id="result" class="result"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#terms">Terms of Service</a>
+                <a href="#api">API Documentation</a>
+                <a href="#support">Support</a>
+                <a href="#blog">Blog</a>
+            </div>
+            <p>&copy; 2025 CurrencyPro. All rights reserved. | Real-time exchange rates powered by ExchangeRate-API</p>
+        </div>
+    </footer>
+
+    <script>
+        // Using Flask backend - no need for direct API calls
+
+        // DOM Elements
+        const form = document.getElementById('converterForm');
+        const amountInput = document.getElementById('amount');
+        const fromCurrency = document.getElementById('fromCurrency');
+        const toCurrency = document.getElementById('toCurrency');
+        const swapBtn = document.getElementById('swapBtn');
+        const convertBtn = document.getElementById('convertBtn');
+        const resultDiv = document.getElementById('result');
+
+        // Set default values
+        fromCurrency.value = 'USD';
+        toCurrency.value = 'EUR';
+        amountInput.value = '100';
+
+        // Swap currencies functionality
+        swapBtn.addEventListener('click', () => {
+            const temp = fromCurrency.value;
+            fromCurrency.value = toCurrency.value;
+            toCurrency.value = temp;
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const amount = parseFloat(amountInput.value);
+            const from = fromCurrency.value;
+            const to = toCurrency.value;
+
+            if (!amount || !from || !to) {
+                showResult('Please fill in all fields', true);
+                return;
+            }
+
+            if (from === to) {
+                showResult(`${amount.toLocaleString()} ${from} = ${amount.toLocaleString()} ${to}`, false);
+                return;
+            }
+
+            // Show loading state
+            convertBtn.innerHTML = '<div class="loading"></div>Converting...';
+            convertBtn.disabled = true;
+
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        from: from,
+                        to: to,
+                        amount: amount
+                    })
+                });
+                
+                const data = await response.json();
+
+                if (response.ok && data.converted) {
+                    const converted = data.converted;
+                    const formattedAmount = amount.toLocaleString();
+                    const formattedConverted = parseFloat(converted).toLocaleString();
+                    const rate = (converted / amount).toFixed(4);
+                    
+                    showResult(
+                        `${formattedAmount} ${from} = ${formattedConverted} ${to}<br>
+                        <small style="opacity: 0.8;">Rate: 1 ${from} = ${rate} ${to}</small>`, 
+                        false
+                    );
+                } else {
+                    throw new Error(data.error || 'Conversion failed');
+                }
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showResult('❌ Conversion failed. Please try again later.', true);
+            } finally {
+                // Reset button state
+                convertBtn.innerHTML = 'Convert Currency 💸';
+                convertBtn.disabled = false;
+            }
+        });
+
+        function showResult(message, isError = false) {
+            resultDiv.innerHTML = message;
+            resultDiv.className = `result ${isError ? 'error' : ''}`;
+            resultDiv.classList.add('show');
+            
+            // Auto-hide after 10 seconds for errors
+            if (isError) {
+                setTimeout(() => {
+                    resultDiv.classList.remove('show');
+                }, 10000);
+            }
+        }
+
+        // Real-time conversion on input change
+        let conversionTimeout;
+        amountInput.addEventListener('input', () => {
+            clearTimeout(conversionTimeout);
+            if (amountInput.value && fromCurrency.value && toCurrency.value) {
+                conversionTimeout = setTimeout(() => {
+                    form.dispatchEvent(new Event('submit'));
+                }, 500);
+            }
+        });
+
+        // Auto-convert when currencies change
+        fromCurrency.addEventListener('change', () => {
+            if (amountInput.value && toCurrency.value) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        toCurrency.addEventListener('change', () => {
+            if (amountInput.value && fromCurrency.value) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Perform initial conversion
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                form.dispatchEvent(new Event('submit'));
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
